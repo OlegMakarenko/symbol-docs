@@ -68,7 +68,7 @@ Continue: :doc:`Setting up your workstation <getting-started/setup-workstation>`
 
 .. |slack| raw:: html
 
-   <a href="https://join.slack.com/t/nem2/shared_invite/enQtMzY4MDc2NTg0ODgyLWZmZWRiMjViYTVhZjEzOTA0MzUyMTA1NTA5OWQ0MWUzNTA4NjM5OTJhOGViOTBhNjkxYWVhMWRiZDRkOTE0YmU" target="_blank">Slack</a>
+   <a href="https://join.slack.com/t/nem2/shared_invite/zt-hwsoo1s5-G8XO50LaY0m7ZKTRXAczcA" target="_blank">Slack</a>
 
 .. |twitter| raw:: html
 
@@ -138,7 +138,6 @@ Continue: :doc:`Setting up your workstation <getting-started/setup-workstation>`
     concepts/harvesting
     concepts/inflation
     concepts/node
-    Whitepaper <https://docs.symbolplatform.com/catapult-whitepaper/main.pdf>
 
 .. toctree::
     :maxdepth: 2

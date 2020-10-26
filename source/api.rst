@@ -106,13 +106,28 @@ WebSocket URIs share the same host and port as the HTTP requests URIs, but use t
 
 * Guide: :doc:`Subscribing to WebSockets channels <guides/blockchain/listening-new-blocks>`
 
+Response format
+===============
+
+All channels share the same response format, which is:
+
+.. code-block:: json
+
+    {
+        "topic": "{subscribed-channel}",
+        "data": {}
+    }
+
+* ``topic`` contains the name of the subscribed channel, so the same websocket can be used to monitor multiple channels (``topic`` matches the ``subscribe`` field provided in the request body when subscribing).
+* ``data`` is a channel-specific object. Each channel listed below describes the data object it returns.
+
 Channels
 ========
 
 **block**
 
-The block channel notifies for every subscribed client every time there is a new harvested block.
-The messages returned contain information about the blocks.
+The ``block`` channel notifies subscribed clients every time a new block is harvested.
+Each returned message contains information about a harvested block.
 
 *Request body*
 
@@ -123,14 +138,32 @@ The messages returned contain information about the blocks.
         "subscribe": "block"
     }
 
-*Response format*
+*Response data*
 
 * `BlockInfoDTO <https://github.com/nemtech/symbol-openapi/blob/main/spec/core/block/schemas/BlockInfoDTO.yml>`_
 
+**finalizedBlock**
+
+The ``finalizedBlock`` channel notifies subscribed clients every time a set of blocks is :ref:`finalized <finalization>`.
+Each returned message contains information about the **highest block** in the finalization round. All blocks with a smaller height are assumed finalized.
+
+*Request body*
+
+.. code-block:: json
+
+    {
+        "uid": "{uid}",
+        "subscribe": "finalizedBlock"
+    }
+
+*Response data*
+
+* `FinalizedBlockDTO <https://github.com/nemtech/symbol-openapi/blob/main/spec/core/chain/schemas/FinalizedBlockDTO.yml>`_
+
 **confirmedAdded/{address}**
 
-The confirmedAdded channel notifies when a transaction related to an address is included in a block.
-The messages returned contain information about the confirmed transactions.
+The ``confirmedAdded`` channel notifies subscribed clients when a transaction related to the given address is included in a block.
+Each returned message contains information about a confirmed transaction.
 
 *Request body*
 
@@ -141,16 +174,16 @@ The messages returned contain information about the confirmed transactions.
         "subscribe": "confirmedAdded/{address}"
     }
 
-*Response format*
+*Response data*
 
 * `TransactionInfoDTO <https://github.com/nemtech/symbol-openapi/blob/main/spec/core/transaction/schemas/TransactionInfoDTO.yml>`_
 
 **unconfirmedAdded/{address}**
 
-The unconfirmedAdded channel notifies when a transaction related to an address gets the unconfirmed state, waiting to be included in a block.
-The messages returned contain information about unconfirmed transactions.
+The ``unconfirmedAdded`` channel notifies subscribed clients when a transaction related to the given address enters the unconfirmed state, waiting to be included in a block.
+Each returned message contains information about an unconfirmed transaction.
 
-Possible scenarios when this channel notifies are: the transaction is announced to the network via ``PUT /transaction`` HTTP endpoint or an AggregateBondedTransaction has all required cosigners and change its state from partial to unconfirmed.
+Possible scenarios when this message is received are: the transaction is announced to the network via the ``PUT /transaction`` HTTP endpoint or an :ref:`AggregateBondedTransaction <aggregate-bonded>` has all required cosigners and changes its state from partial to unconfirmed.
 
 *Request body*
 
@@ -161,16 +194,16 @@ Possible scenarios when this channel notifies are: the transaction is announced 
         "subscribe": "unconfirmedAdded/{address}"
     }
 
-*Response format*
+*Response data*
 
 * `TransactionInfoDTO <https://github.com/nemtech/symbol-openapi/blob/main/spec/core/transaction/schemas/TransactionInfoDTO.yml>`_
 
 **unconfirmedRemoved/{address}**
 
-The unconfirmedRemoved channel notifies when a transaction related to an address had the unconfirmed state, but not anymore.
-The messages returned contain the transactions hashes.
+The ``unconfirmedRemoved`` channel notifies subscribed clients when a transaction related to the given address exits the unconfirmed state.
+Each returned message contains a no-longer-unconfirmed transaction hash.
 
-Possible scenarios when this channel notifies are: the transaction now is confirmed, or the deadline has been reached, and it was not included in a block.
+Possible scenarios when this message is received are: the transaction is now confirmed, or the deadline was reached and the transaction was not included in a block.
 
 *Request body*
 
@@ -181,14 +214,14 @@ Possible scenarios when this channel notifies are: the transaction now is confir
         "subscribe":"unconfirmedRemoved/{address}"
     }
 
-*Response format*
+*Response data*
 
 * Hash
 
 **partialAdded/{address}**
 
-The partialAdded channel notifies when an AggregateBondedTransaction related to an address reaches the partial state, waiting to have all required cosigners.
-The messages returned contain information about the transactions.
+The ``partialAdded`` channel notifies subscribed clients when an :ref:`AggregateBondedTransaction <aggregate-bonded>` related to the given address enters the partial state, waiting for all required cosignatures to complete.
+Each returned message contains information about an added partial transaction.
 
 *Request body*
 
@@ -199,16 +232,16 @@ The messages returned contain information about the transactions.
         "subscribe": "partialAdded/{address}"
     }
 
-*Response format*
+*Response data*
 
 * `TransactionInfoDTO <https://github.com/nemtech/symbol-openapi/blob/main/spec/core/transaction/schemas/TransactionInfoDTO.yml>`_
 
 **partialRemoved/{address}**
 
-The partialRemoved channel notifies when a transaction related to an address had the partial state, but is not anymore.
-The messages returned contain the transactions hashes.
+The ``partialRemoved`` channel notifies subscribed clients when a transaction related to the given address exits the partial state.
+Each returned message contains a removed partial transaction hash.
 
-Possible scenarios when this channel notifies are: the transaction now is unconfirmed, or the deadline has been reached, and it was not included in a block.
+Possible scenarios when this message is emitted are: all required cosignatures were received and the transaction is now unconfirmed, or the deadline was reached and the transaction was not included in a block.
 
 *Request body*
 
@@ -219,14 +252,14 @@ Possible scenarios when this channel notifies are: the transaction now is unconf
         "subscribe": "partialRemoved/{address}"
     }
 
-*Response format*
+*Response data*
 
 * Hash
 
 **cosignature/{address}**
 
-The cosignature channel notifies when a cosignature signed transaction related to an address is added to an AggregateBondedTransaction with the partial state.
-The messages returned contain the cosignature signed transaction.
+The ``cosignature`` channel notifies subscribed clients when a cosignature-signed transaction related to the given address is added to an :ref:`AggregateBondedTransaction <aggregate-bonded>` in the partial state.
+Each returned message contains a cosignature-signed transaction.
 
 *Request body*
 
@@ -237,14 +270,14 @@ The messages returned contain the cosignature signed transaction.
         "subscribe": "cosignature/{address}"
     }
 
-*Response format*
+*Response data*
 
 * `CosignatureDTO <https://github.com/nemtech/symbol-openapi/blob/main/spec/plugins/aggregate/schemas/CosignatureDTO.yml>`_
 
 **status/{address}**
 
-The status channel notifies when a transaction related to an address rises an error.
-The messages returned contain the error messages and the transaction hashes.
+The ``status`` channel notifies subscribed clients when a transaction related to the given address signals an error.
+Each returned message contains an error message and a transaction hash.
 
 *Request body*
 
@@ -255,21 +288,13 @@ The messages returned contain the error messages and the transaction hashes.
         "subscribe": "status/{address}"
     }
 
-*Response format*
+*Response data*
 
 * `TransactionStatusDTO <https://github.com/nemtech/symbol-openapi/blob/main/spec/core/transaction/schemas/TransactionStatusDTO.yml>`_
 
 .. |yarn| raw:: html
 
     <a href="https://yarnpkg.com/lang/en/" target="_blank">yarn</a>
-
-.. |catapult-service-bootstrap| raw:: html
-
-   <a href="https://github.com/tech-bureau/catapult-service-bootstrap" target="_blank">Catapult Service Bootstrap</a>
-
-.. |catapult-server| raw:: html
-
-   <a href="https://github.com/nemtech/catapult-server" target="_blank">catapult-server</a>
 
 .. |catapult-rest| raw:: html
 

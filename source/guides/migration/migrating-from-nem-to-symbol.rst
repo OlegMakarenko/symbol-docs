@@ -45,7 +45,7 @@ Right now, there are two options to start testing Symbol.
 
 * **Public test network** The public test network uses the same technology and features of the future main public network. You can use the testnet to experiment with the offered transaction set in a live network without the loss of valuable assets. To start using the test net, follow :doc:`this guide <../../getting-started/setup-workstation>`.
 
-* **Private test network**: To run a private test network, use the package |catapult-service-bootstrap|. This software suite contains the necessary setup scripts to build a network for development and learning purposes with just one command.
+* **Private test network**: To run a private test network, use the package |symbol-bootstrap|. This tool contains the necessary setup scripts to build a network for development and learning purposes with just one command.
 
 **************************
 Legacy API incompatibility
@@ -195,11 +195,11 @@ After reading this documentation, you might still have some unanswered questions
 
 In this site, you will find descriptions for every new :doc:`feature <../../concepts/overview>` and :ref:`self-paced guides <blog-categories>` on how to use the **software development kits**.
 
-We invite you to connect connect with our developer community by joining the |slack|.
+We invite you to connect with our developer community by joining the |slack|.
 
-.. |catapult-service-bootstrap| raw:: html
+.. |symbol-bootstrap| raw:: html
 
-   <a href="https://github.com/tech-bureau/catapult-service-bootstrap" target="_blank">catapult-service-bootstrap</a>
+   <a href="https://github.com/nemtech/symbol-bootstrap" target="_blank">symbol-bootstrap</a>
 
 .. |ts-js-sdk| raw:: html
 
@@ -223,7 +223,7 @@ We invite you to connect connect with our developer community by joining the |sl
 
 .. |slack| raw:: html
 
-   <a href="http://slack.nemtech.io/" target="_blank">Slack</a>
+   <a href="https://join.slack.com/t/nem2/shared_invite/zt-hwsoo1s5-G8XO50LaY0m7ZKTRXAczcA" target="_blank">Slack</a>
 
 .. |under-development| raw:: html
 

@@ -5,17 +5,19 @@
     :excerpt: 1
     :nocomments:
 
-###########################
-Creating a private test net
-###########################
+##############################
+Creating private test networks
+##############################
 
-This guide will walk you through the process of setting up your own private network using |codename|'s technology.
+This guide will walk you through the process of setting up your own private network using |codename|.
 
-To run the network, we are going to use the package |catapult-service-bootstrap|. This software suite contains the necessary setup scripts to help developers to quickly build their own network.
+To run the network, we are going to use the package |symbol-bootstrap|. To better understand how this package works it is recommended to read the :doc:`Using Symbol Bootstrap<using-symbol-bootstrap>` guide.
 
-.. note:: This bootstrap setup is for learning and development purposes and it should not power any production |codename| instances.
+************************
+The ``bootstrap`` preset
+************************
 
-|codename| Service Bootstrap deploys a private network with the following high-level architecture:
+|symbol-bootstrap| has a preset called ``bootstrap`` which instantiates a network with multiple nodes with the following architecture:
 
 .. figure:: ../../resources/images/diagrams/four-layer-architecture.png
     :width: 500px
@@ -23,147 +25,154 @@ To run the network, we are going to use the package |catapult-service-bootstrap|
 
     Bootstrap network architecture
 
+The nodes labelled "Internal" are the ones created by |symbol-bootstrap|, and are accessible through the REST API:
+
 * **peer-node (1 and 2)**: Peer nodes verify transactions once the API pushes them into the P2P network. They run the consensus algorithm, create new blocks, and propagate the changes through the network.
 * **api-node**: The API node stores data in the MongoDB database once transactions are validated. They also identify and store partial aggregate bonded transactions.
 * **rest-gateway**: Combines HTTP and WebSockets to perform read and write actions on the blockchain.
 
-*********************
-Hardware requirements
-*********************
+***********************
+Instantiate the network
+***********************
 
-|codename| Service Bootstrap has been tested on computers with the following **minimum requirements**.
+Use the ``start`` command (explained in the :ref:`Using Symbol Bootstrap <symbol-bootstrap-all-in-one>` guide) using the ``bootstrap`` preset:
 
-* **CPU**: 2 cores or more
-* **Memory**: 4GB or more
-* **HD**: 20GB or more
+.. code-block:: bash
 
-.. note:: Although you might be able to run the software in less powerful instances, you might encounter some issues while installing or running the node.
+    symbol-bootstrap start -p bootstrap
 
-************************
-Environment requirements
-************************
+With a single command the network is created and booted. Now check that it is up and running by opening a new browser tab and going to:
 
-The setup scripts are available for Linux and Mac OS and automated using docker.
-To run a test net node, you will need to have installed the following docker tools:
+``localhost:3000/chain/info``
 
-* `docker`_
-* `docker-compose`_
+You should get a response from the API node.
 
-*****************
-Port requirements
-*****************
+****************************
+Retrieving the node accounts
+****************************
 
-Make sure that the server's host is accessible from the internet and that the following ports are open and available:
+|symbol-bootstrap| has created multiple nodes with corresponding accounts. To interact with any of these accounts (to transfer mosaics **to** it, for example) you need its address or its public key. To fully control an account (to transfer mosaics **from** it, for example) you need its private key.
 
-* The port ``7900`` is used by catapult-server to communicate between nodes.
-* The port ``3000`` is used by the REST Gateway to expose the endpoints to interact with the node.
+All this information can be retrieved from a YAML file in the ``target`` folder:
+
+``target/addresses.yml``
+
+As an example:
+
+.. code-block:: yaml
+
+    networkType: 152
+    nemesisGenerationHashSeed: 7BFC536990108CA923B2715DE6B8E47E6BB56C945293BF4FC22C5AF895F61E62
+    nodes:
+        -
+            signing:
+                # Keys for the account of the peer-node-0
+                privateKey: ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+                publicKey: C2BD21E4F9261247A4CBE75DA8683978E0F1FFF34AAB17BEBC21E7B9E0E17A9F
+                address: TAMEGYVY6GVGXCLBIEH72XU4D2OSTH2MIOOY4QQ
+            vrf:
+                privateKey: ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+                publicKey: D67601AC6767F8A3C97FFDB0D9D737A943FFFA6E69C2C6527B0ED32A4E41B443
+                address: TCR6ZWX3UP3TKJK3BSE6ARJ4WAF3KHFFUWJ7EWI
+            voting:
+                privateKey: ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+                publicKey: 921ED0839EA3C8590CA1D6562DDD3BFEDA44CCE05DD82DF8C79DED2A3F816A1B
+                address: TA77BJJJMRXR2OLJKZNUFTRMLHLQ4T2PPHZRX5I                
+            ssl:
+                privateKey: ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+                publicKey: 3d68cdaa4e48a14bd875d4ca18e044522be5f602e8c4f37c1c65eafdfaa19110
+            type: peer-node
+            name: peer-node-0
+            friendlyName: peer-node-0
+
+.. note:: Keep you Secret Keys secret at all times!
+
+You can now import any of these accounts using the |symbol-cli| command-line tool for ease of access (Read :doc:`the symbol-cli guide <../../cli>` for more details):
+
+.. code-block:: bash
+
+    symbol-cli profile import --private-key <PRIVATE_KEY> --network TEST_NET --url http://localhost:3000
+
+After giving this new profile a name you will be ready to use it, for example, to retrieve the account's balance:
+
+.. code-block:: bash
+
+    symbol-cli account info --profile <PROFILE_NAME>
+
+You should see that the nodes that |symbol-bootstrap| has created for you already contain some currency (in different :doc:`mosaics <../../concepts/mosaic>`) to start experimenting with them:
+
+.. code-block:: text
+
+    Balance Information
+    ┌──────────────────┬──────────────────┬──────────────────┬───────────────────┐
+    │ Mosaic Id        │ Relative Amount  │ Absolute Amount  │ Expiration Height │
+    ├──────────────────┼──────────────────┼──────────────────┼───────────────────┤
+    │ 3ECBB73A05A147BC │ 1,124,874,999.75 │ 1124874999750000 │ Never             │
+    ├──────────────────┼──────────────────┼──────────────────┼───────────────────┤
+    │ 2B19203C86F9A668 │ 3,000            │ 3000000          │ Never             │
+    └──────────────────┴──────────────────┴──────────────────┴───────────────────┘
+
+****************************
+Retrieving the test accounts
+****************************
+
+|symbol-bootstrap| has also created several test accounts preloaded with :doc:`mosaics <../../concepts/mosaic>`. These accounts exist solely for development and learning purposes.
+
+The keys to these accounts can be found in the ``target/addresses.yml`` file as described above, in the ``mosaics`` section:
+
+.. code-block:: yaml
+
+    mosaics:
+        currency:
+            -
+                # This is an account containing the main currency
+                privateKey: ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+                publicKey: 2E10EE45517E04150B5701EDDCBBF95D5E7077CA6627E29CFA8B862BAE09A29F
+                address: TCOKYEBOBNVFEPCEADZXFESZFFIWJH2LF245O3A
+        harvest:
+            -
+                # This is an account containing the network currency used for harvesting
+                privateKey: ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●
+                publicKey: 1467662C8FBE485FDDB792E36646AC935443B354D38A1DF9E4CE3DAAE5B6F107
+                address: TA4B2EM3OJVYE7ZP426J3UVWPRRP4HDCKJHUXEI
+
+Use the Private Keys to access these accounts, for example, using the |symbol-cli| command-line tool as described above.
 
 ************
-Installation
+Voting nodes
 ************
 
-1. Use this link to **download the latest release** of the package, or clone the repository directly using Git.
+The :ref:`block finalization <finalization>` process requires that network nodes vote about the correctness of blocks before they are added to the blockchain. Each node can decide whether to register as a voter or not.
 
-.. code-block:: bash
+All nodes created by the ``bootstrap`` preset are voters by default. If you don't want this, provide a custom preset with these lines to disable voting for each node:
 
-    git clone https://github.com/tech-bureau/catapult-service-bootstrap.git
+.. code-block:: yaml
 
-2. Open the ``catapult-service-bootstrap`` folder.
+    nodes:
+    - voting: false # peer-node-0
+    - voting: false # peer-node-1
+    - voting: false # api-node-0
 
-.. code-block:: bash
+.. note:: Without ANY voting node no finalization can occur. By taking a look at ``localhost:3000/chain/info`` you will see you chain height grow but the ``latestFinalizedBlock``'s height will remain at zero.
 
-    cd catapult-service-bootstrap
+******************************
+Configuring network properties
+******************************
 
-3. (Optional) Customize the network's :doc:`configurable parameters <configuring-network-properties>` before launching it.
-
-4. Run the network.
-
-.. code-block:: bash
-
-    ./cmds/start-all
-
-.. note:: To run the docker containers in the background of your terminal, you can run the service in detached mode using the option ``--detach`` or ``-d``.
-
-5. Verify that the node is running by opening a new browser tab with the following URL: ``localhost:3000/chain/height``.
-
-To stop the process, press ``Ctrl+C``.
-
-Find more commands to manage the network in the `installation notes <https://github.com/tech-bureau/catapult-service-bootstrap#bootstrap-scriptscommands>`_.
-
-*********************
-Getting test currency
-*********************
-
-An :doc:`account <../../concepts/account>` is a deposit box where you can hold :doc:`mosaics <../../concepts/mosaic>` (tokens) and interact with them announcing transactions.
-To announce a transaction, the sender should pay a :doc:`fee <../../concepts/fees>` to provide an incentive to those who validate and secure the network and run the infrastructure.
-This cost is paid in |privatenetworkcurrency| mosaics, the default network token.
-
-After running the ``catapult-service-bootstrap`` tool for the first time, the available currency supply is distributed between a generated set of accounts.
-To keep one of these accounts quickly retrievable, we are going to store one of them using a command-line tool to conveniently perform the most commonly used actions i.e. interact with the blockchain, setting up an account, sending funds, etc.
-
-1. Install |cli|.
-
-.. code-block:: bash
-
-    npm install --global symbol-cli
-
-2. Open a new terminal window.
-Then, go to the directory where the bootstrap tool has generated the addresses.
-
-.. code-block:: bash
-
-    cd  build/generated-addresses/
-
-3. Display the content of the ``addresses.yaml`` file.
-
-.. code-block:: bash
-
-    cat addresses.yaml
-
-4. Under the section ``nemesis_addresses``, you will find the key pairs which contain |privatenetworkcurrency|.
-Copy the private key of the first account.
-
-5. Type the command ``symbol-cli profile import`` using the key obtained in the previous step.
-
-.. code-block:: bash
-
-    symbol-cli profile import
-
-    Enter network type (MIJIN_TEST, MIJIN, MAIN_NET, TEST_NET): TEST_NET
-    Enter your private key: 123***456
-    Enter a Symbol Node URL. (Example: http://localhost:3000): http://localhost:3000
-    Insert profile name: base-profile
-
-You should see the account credentials in your terminal.
-
-.. code-block:: bash
-
-    Profile stored correctly
-    ┌─────────────┬──────────────────────────────────────────────────────────────────┐
-    │ Property    │ Value                                                            │
-    ├─────────────┼──────────────────────────────────────────────────────────────────┤
-    │ Address     │ SCVG35-ZSPMYP-L2POZQ-JGSVEG-RYOJ3V-BNIU3U-N2E6                   │
-    ├─────────────┼──────────────────────────────────────────────────────────────────┤
-    │ Public Key  │ 654...321                                                        │
-    ├─────────────┼──────────────────────────────────────────────────────────────────┤
-    │ Private Key │ 123...456                                                        │
-    └─────────────┴──────────────────────────────────────────────────────────────────┘
-
-As the name suggests, the **private key has to be kept secret at all times**.
-Anyone with access to the private key ultimately has control over the account.
-On the other hand, you can share securely the public and address of your account with other participants of the network to receive transactions from them.
+Read the :doc:`Configuring network properties <configuring-network-properties>` guide for a list of network-related settings that can be customized.
 
 **********
 Next steps
 **********
 
-Now that you have your test network running and an account with some |privatenetworkcurrency|, we recommend you to surf the |sitename|.
-In this portal, you can find detailed information about |codename|'s features and :ref:`self-paced guides <blog-categories>` on how to use the software development kits.
+You now have a test network running and access to each node's account. You can also interact with it through the API node serving at ``localhost:3000``.
 
-.. _docker: https://docs.docker.com/install/
+We recommend you continue reading the rest of :ref:`the guides <blog-categories>` to keep learning more |codename|'s features!
 
-.. _docker-compose: https://docs.docker.com/compose/install/
+.. |symbol-bootstrap| raw:: html
 
-.. |catapult-service-bootstrap| raw:: html
+   <a href="https://github.com/nemtech/symbol-bootstrap" target="_blank">Symbol Bootstrap</a>
 
-   <a href="https://github.com/tech-bureau/catapult-service-bootstrap" target="_blank">Catapult Service Bootstrap</a>
+.. |symbol-cli| raw:: html
+
+   <a href="https://github.com/nemtech/symbol-cli" target="_blank">symbol-cli</a>
