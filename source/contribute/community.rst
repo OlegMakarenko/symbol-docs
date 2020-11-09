@@ -23,10 +23,6 @@ Discover how the open source |community| works, and get started participating:
 
    <a href="https://github.com/nemtech/community/" target="_blank">community</a>
 
-.. |slack| raw:: html
-
-   <a href="https://join.slack.com/t/nem2/shared_invite/zt-hwsoo1s5-G8XO50LaY0m7ZKTRXAczcA" target="_blank">Slack</a>
-
 .. |twitter| raw:: html
 
    <a href="https://twitter.com/NEMofficial" target="_blank">Twitter</a>
